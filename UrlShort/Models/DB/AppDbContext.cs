@@ -6,6 +6,6 @@ public class AppDbContext : DbContext
 {
     public virtual DbSet<ShortUrl> Urls { get; set; }
 
-    public AppDbContext(DbContextOptions options) : base(options)
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     { }
 }

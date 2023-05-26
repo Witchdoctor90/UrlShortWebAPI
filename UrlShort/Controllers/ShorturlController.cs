@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UrlShort.Models;
 using UrlShort.Models.DB;
@@ -15,7 +17,24 @@ public class ShorturlController : Controller
         _urlShortener = urlShortener;
         _db = db;
     }
+
+    [HttpGet]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Route("[controller]/GetForUser")]
+    public IActionResult GetForUser()
+    {
+        var result = _db.Urls.Where(u => u.AuthorName == HttpContext.User.Identity.Name);
+        return Ok(result.ToList());
+    }
+
     
+    [HttpGet]
+    [Route("[controller]/GetAll")]
+    public IActionResult GetAll()
+    {
+        var result = _db.Urls.ToList();
+        return Ok(result);
+    }
     
     [HttpPost]
     [Route("[controller]/generate")]
@@ -29,7 +48,8 @@ public class ShorturlController : Controller
         _db.Urls.Add(new ShortUrl()
         {
             ShortenedUrl = randomString,
-            Url = url
+            Url = url,
+            AuthorName = HttpContext.User.Identity.Name
         });
         await _db.SaveChangesAsync();
         

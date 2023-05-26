@@ -22,6 +22,10 @@ namespace UrlShort.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("AuthorName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ShortenedUrl")
                         .IsRequired()
                         .HasColumnType("TEXT");

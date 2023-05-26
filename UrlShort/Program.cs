@@ -1,7 +1,9 @@
 using JavaScriptEngineSwitcher.ChakraCore;
 using JavaScriptEngineSwitcher.Extensions.MsDependencyInjection;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using React.AspNet;
 using UrlShort.Models;
 using UrlShort.Models.DB;
@@ -29,7 +31,22 @@ builder.Services.AddDbContext<AppIdentityContext>(options => options.UseSqlite(b
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<AppIdentityContext>();
 
-builder.Services.AddAuthentication();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuer = true,
+        ValidIssuer = AuthOptions.Issuer,
+
+        ValidateAudience = true,
+        ValidAudience = AuthOptions.Audience,
+        ValidateLifetime = true,
+
+        IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+        ValidateIssuerSigningKey = true
+    };
+});
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 

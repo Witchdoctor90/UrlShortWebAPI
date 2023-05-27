@@ -17,11 +17,13 @@ public class UsersController : Controller
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
  
-    public UsersController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+    public UsersController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, RoleManager<IdentityRole> roleManager)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _roleManager = roleManager;
     }
     
     
@@ -44,6 +46,30 @@ public class UsersController : Controller
         
         return Ok(token);
     }
+
+    [HttpPost]
+    [Route("[controller]/login")]
+    public async Task<IActionResult> Login(UserDto user)
+    {
+        var identity = await _userManager.FindByNameAsync(user.UserName);
+        if (identity == null) return BadRequest("Invalid login or password");
+        var result = await _signInManager.CheckPasswordSignInAsync(identity, user.Password, false);
+        if (!result.Succeeded) return BadRequest("Invalid login or password");
+
+        var token = await Token(identity);
+        if (token == null) return BadRequest("Login error, please try again");
+        return Ok(token);
+    }
+
+
+    [HttpPost]
+    [Route("[controller]/isAdmin")]
+    public async Task<bool> IsAdministrator([FromBody] string username)
+    {
+        var user = await _userManager.FindByNameAsync(username);
+        return await _userManager.IsInRoleAsync(user, "Administrator");
+    }
+    
     
     [HttpPost]
     [Route("[controller]/token")]
@@ -60,15 +86,9 @@ public class UsersController : Controller
             expires: DateTime.Now.Add(TimeSpan.FromMinutes(AuthOptions.Lifetime)),
             signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
         var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
-
-        var response = new
-        {
-            access_token = encodedJwt,
-            username = identity.Name
-        };
-
-        return response.ToJson();
+        return encodedJwt.ToJson();
     }
+    
     
     private async Task<ClaimsIdentity> GetIdentityAsync(IdentityUser user)
     {
@@ -83,6 +103,7 @@ public class UsersController : Controller
         var claimsIdentity = new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType,
             ClaimsIdentity.DefaultRoleClaimType);
         return claimsIdentity;
+        
     }
 }
 

@@ -14,6 +14,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddMemoryCache();
+builder.Services.AddCors(options => options.AddPolicy("AllowAll", policy =>
+{
+    policy.AllowAnyHeader();
+    policy.AllowAnyOrigin();
+    policy.AllowAnyMethod();
+}));
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<IUrlShortener, UrlShortener>();
@@ -47,6 +53,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidateIssuerSigningKey = true
     };
 });
+
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 
@@ -59,7 +66,8 @@ if (app.Environment.IsDevelopment())
 }
 
 
-app.UseHttpsRedirection();
+app.UseRouting();
+app.UseCors("AllowAll");
 app.UseReact(config => { });
 app.UseDefaultFiles();
 app.UseStaticFiles();

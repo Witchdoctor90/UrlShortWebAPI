@@ -37,23 +37,32 @@ public class ShorturlController : Controller
     }
     
     [HttpPost]
-    [Route("[controller]/generate")]
-    public async Task<string> Generate([FromBody]string url)
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Route("[controller]/shorten")]
+    public async Task<string> Shorten([FromBody]string url)
     {
         if (!_urlShortener.IsValid(url)) return "Invalid URL!";
-        var randomString = _urlShortener.GenerateUrl(url);
-        if (_db.Urls.Any(u => u.ShortenedUrl == url)) 
-            randomString = await Generate(url);
+        var path = GenerateUniqueUrlPath(url);
 
         _db.Urls.Add(new ShortUrl()
         {
-            ShortenedUrl = randomString,
+            ShortenedUrl = path,
             Url = url,
             AuthorName = HttpContext.User.Identity.Name
         });
+        
         await _db.SaveChangesAsync();
         
-        var result = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/{randomString}";
+        var result = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/{path}";
         return result;
+    }
+    
+    [NonAction]
+    public string GenerateUniqueUrlPath(string url)
+    {
+        var path = _urlShortener.GenerateUrl(url);
+        if (_db.Urls.Any(u => u.ShortenedUrl == url)) 
+            path = GenerateUniqueUrlPath(url);
+        return path;
     }
 }

@@ -12,7 +12,10 @@ const About = () => {
                 <li>-React for client app</li>
                 <li>-Identity with JWT Authorization</li>
                 <li>-Entity Framework for Storing links and users</li>
-            </ul>
+            </ul> <br></br>
+            <h2>About the Algorithm</h2>
+            <p>For creating short links i just use 8 random unique alphanumeric chars</p>
+
         </div>
     );
 };

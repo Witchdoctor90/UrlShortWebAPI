@@ -16,12 +16,17 @@ const UrlInputForm = (props) =>{
         isValid = validateUrl(url);
         if(!isValid) setErrors([..."Invalid Url"]);
 
-        var token = sessionStorage.getItem('token');
-        console.log(token)
+        let token = sessionStorage.getItem('token');
         const headers = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         };
+        let requestBody = url;
+        let response = await axios.post(props.serverUrl + 'Shorturl/shorten',
+            requestBody,
+            {headers:headers});
+        setShortUrl(response.data);
+        console.log(response);
     }
 
     const validateUrl = (url) => {

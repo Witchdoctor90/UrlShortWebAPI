@@ -1,10 +1,12 @@
 import React, {useState} from 'react';
 import styles from './LoginCard.module.css'
 import axios from "axios";
+import {useNavigate} from "react-router-dom";
 
 
 
 const LoginCard = (props) => {
+    const navigate = useNavigate();
     const [login, setLogin] = useState('');
     const [password, setPassword] = useState('');
     const host = props.host;
@@ -28,8 +30,10 @@ const LoginCard = (props) => {
             }
         });
         let token = result.data;
+        console.log(token);
         sessionStorage.setItem('token', token);
-        navigator.push('/index');
+        navigate('/index');
+
     }
 
     return (

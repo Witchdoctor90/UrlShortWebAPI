@@ -22,12 +22,6 @@ const UrlInputForm = (props) =>{
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         };
-        var requestBody = url;
-        var response = await axios.post(props.serverUrl + 'Shorturl/shorten',
-            requestBody,
-            {headers:headers});
-        setShortUrl(response.data);
-        console.log(response);
     }
 
     const validateUrl = (url) => {
